@@ -1,288 +1,219 @@
-# Project: CUDA and C++ Kernels for Image Processing
+# CUDA and C++ Kernels for Image Processing
 
-This project contains multiple C++ and CUDA kernel source files used for various computations. These source files are called by the `main.cu` file, which acts as the entry point for compiling and running the project. The entire project is compiled and run in the provided Colab notebook.
+This project involves implementing image processing using CUDA and C++ kernels, with the goal of executing operations like convolution, pooling, and dense layer computations. The source files are organized and compiled within a Colab notebook, which also serves as the execution environment.
+
+---
 
 ## Table of Contents
 
-- [main.cu](#maincu) 
-- [load_npy.cpp](#load_npycpp) 
-- [utils.cpp](#utilscpp) 
-- [Kernels.cu](#kernelscu) 
-- [colab_notebook.ipynb](#colab_notebookipynb) 
----
----
-
-# main.cu
-
-This file serves as the entry point for executing a Convolutional Neural Network (CNN) using CUDA. It defines the structure and flow of operations performed through various layers, from convolution to dense layers.
-
-## Includes
-
-- Standard libraries for input/output and memory management.
-- CUDA runtime and core libraries for GPU operations.
-- Custom headers for kernel functions, utility functions, loading NumPy arrays, and CuDNN implementations.
-
-## Main Function
-
-### Initialization
-
-- **Image Index**: An integer (`image_indextoload`) specifies which image to load for processing.
-- **Layer Dimensions and Data Structures**: 
-  - Six sets of `layer_DIM` and `layer_data` structures are defined for the different layers of the CNN.
-
-### Layer Operations
-
-1. **First Conv2D Layer**:
-   - Calls `populate_input_layer` to initialize the input layer dimensions and data.
-   - Loads the specified image using `Load_image`.
-   - Performs convolution using `perform_convolution`.
-
-2. **Second Conv2D Layer**:
-   - Populates layer dimensions and data from the first layer.
-   - Executes convolution on the second layer.
-
-3. **Third Conv2D Layer**:
-   - Similar to the second layer, it populates data from the second layer and performs convolution.
-
-4. **Fourth Max Pooling Layer**:
-   - Populates layer data from the third convolutional layer.
-   - Defines pooling size and stride.
-   - Calls `perform_max_pooling` to down-sample the feature maps.
-
-5. **Fifth Flatten Layer**:
-   - Populates layer data from the fourth layer (assumes the array is already flattened).
-   - **Note**: The flattening step is commented out in the provided code.
-
-6. **Sixth Dense Layer**:
-   - Populates layer dimensions and data from the fourth layer.
-   - Executes the dense layer operation using `perform_Dense`.
-
-### Output
-
-- The program concludes with a message indicating completion of processing.
-
-## Notes
-
-- The code is modular, allowing for easy integration of various layers and operations.
-- Several commented-out sections suggest potential testing or alternative implementations (e.g., CuDNN convolution).
-- The utility functions are expected to handle image loading, data verification, and output printing, though they are not detailed in this file.
-
-
-
-
+- [Project Overview](#project-overview)
+- [How to Run in Google Colab](#how-to-run-in-google-colab)
+- [Files and Descriptions](#files-and-descriptions)
+  - [main.cu](#maincu)
+  - [load_npy.cpp](#load_npycpp)
+  - [utils.cpp](#utilscpp)
+  - [Kernels.cu](#kernelscu)
+  - [colab_notebook.ipynb](#colab_notebookipynb)
 
 ---
----
-# load_npy.cpp
 
-The `load_npy.h` file is responsible for loading and managing data from `.npy` files. These files contain trained weights, input data, and other layer-specific information for a neural network. This header file includes several functions to manage data population and verification for different layers of the network. Here's a breakdown of the key functionalities:
+## Project Overview
 
-## Functions
-
-### 1. `Load_image`
-- **Description**: Loads input image data from a `.npy` file and stores it in the `h_input` member of `layer_data`.
-- **Functionality**:
-  - Uses the `image_index` to select and copy the specific image's data into memory.
-
-### 2. `populate_input_with_maps`
-- **Description**: Copies output data from one layer (`L_DATA_input`) to the input data of the current layer (`L_DATA`).
-- **Functionality**:
-  - Based on the calculated input size, this function populates the input of the current layer with data from the previous layer.
-
-### 3. `populate_verification`
-- **Description**: Loads verification data from a `.npy` file into the `v_output` member of `layer_data`.
-- **Functionality**:
-  - Uses the `L_index` and `image_index` to retrieve specific layer verification data.
-
-### 4. `populate_input_layer`
-- **Description**: Populates input and output dimensions for a layer using `.npy` files containing the input and output shapes.
-- **Functionality**:
-  - Loads weights and biases from `.npy` files if they exist, and stores them in `h_mask` and `h_bias`, respectively.
-  - If weights or biases are not found, the layer is initialized with default dimensions and values.
-  - This function also handles layer-specific dimensions like convolution and dense layers.
-
-### 5. `populate_layer`
-- **Description**: A higher-level function that sets up a layer for processing.
-- **Functionality**:
-  - Calls both `populate_input_layer` and `populate_input_with_maps` to fully prepare a layer for use in the neural network.
-
----
----
-
-
-
-
-
-# utils.cpp
-
-The `utils.cpp` file contains utility functions for verifying the output of a neural network kernel, printing outputs, and displaying testing values for structure verification. Below is a breakdown of the key functionalities:
-
-## Functions
-
-### 1. `verify_kernel_output`
-- **Description**: Verifies the output of the neural network kernel against the expected verification output (`v_output`).
-- **Parameters**:
-  - `const layer_data& L_data`: Contains the data structure for the layer, including the kernel output and verification output.
-  - `const layer_DIM& L`: Dimensions of the layer, used for calculating the output size.
-- **Functionality**:
-  - Compares each element of the kernel output (`h_output`) with the corresponding verification output (`v_output`) using a defined tolerance.
-  - Reports whether the verification passed or failed.
-
-### 2. `print_output`
-- **Description**: Prints the output results of the neural network layer.
-- **Parameters**:
-  - `const float* output`: Pointer to the output data to be printed.
-  - `const layer_DIM& L`: Dimensions of the output layer.
-  - `int maps`: Number of filters (maps) in the layer.
-- **Functionality**:
-  - Iterates through the output data and prints the results for each filter in a formatted manner.
-
-### 3. `print_test`
-- **Description**: Prints testing values for structure verification, including dimensions and sizes of input, mask (weights), and output data.
-- **Parameters**:
-  - `const layer_DIM& L_DIM`: Dimensions of the layer, including input, mask, and output.
-  - `const layer_data& L_DATA`: Contains data for the layer, including weights (`h_mask`), biases (`h_bias`), and input data (`h_input`).
-- **Functionality**:
-  - Displays dimensions and sizes of input, mask, and output data, both in terms of counts and bytes.
-  - Prints all elements of the weights and biases.
-  - Displays input data in a specified format (e.g., 28 x 28 x 1).
-
-## Key Features
-- **Floating-Point Verification**: Uses a small tolerance for comparing floating-point numbers to account for numerical precision issues.
-- **Formatted Output**: Sets precision for floating-point values to ensure clarity when printing results.
-- **Depth-wise Input Visualization**: Prints the input data depth-wise for easier visualization of the 3D structure.
-
-### Example Output
-- The functions provide outputs such as verification status, sizes of various components, and the contents of weights, biases, and input data.
-
-
----
----
-
-
-
-# Kernels.cu
-
-This file contains CUDA kernels and functions for performing various operations in a neural network, including convolution, max pooling, and dense layer processing. Below is a breakdown of the key components:
-
-## Includes
-
-- Standard and CUDA libraries for error handling, memory management, and mathematical operations.
-
-## Kernel Functions
-
-### Convolution_2D
-
-- **Purpose**: Executes 2D convolution on input data.
-- **Parameters**:
-  - `float *d_input`: Device pointer to the input data.
-  - `float *d_output`: Device pointer to the output data.
-  - `const layer_DIM L`: Structure containing layer dimensions.
-- **Details**:
-  - Loops through output dimensions and applies the convolution operation using a defined mask and bias.
-  - Applies ReLU activation after computing the convolution.
-
-### MaxPooling_2D
-
-- **Purpose**: Performs max pooling operation on input data.
-- **Parameters**:
-  - `float *d_input`: Device pointer to the input data.
-  - `float *d_output`: Device pointer to the output data.
-  - `layer_DIM L`: Structure containing layer dimensions.
-  - `dim3 poolSize`: Dimensions of the pooling window.
-  - `dim3 stride`: Stride size for the pooling operation.
-- **Details**:
-  - Iterates through the input data to determine the maximum value within the specified pooling window and stores it in the output.
-
-### Dense
-
-- **Purpose**: Implements the fully connected layer's forward pass.
-- **Parameters**:
-  - `float *d_input`: Device pointer to the input data.
-  - `float *d_output`: Device pointer to the output data.
-  - `const layer_DIM L`: Structure containing layer dimensions.
-- **Details**:
-  - Computes the linear combination of inputs and weights, adds bias, and then applies the softmax function to produce probabilities.
-
-## Host Functions
-
-### perform_convolution
-
-- **Purpose**: Manages memory allocation, kernel invocation, and data transfer for the convolution operation.
-- **Parameters**:
-  - `layer_DIM &L_DIM`: Reference to layer dimensions.
-  - `layer_data &L_DATA`: Reference to layer data, including inputs, outputs, and parameters.
-- **Details**:
-  - Allocates device memory, copies data from host to device, launches the convolution kernel, and retrieves results.
-
-### perform_max_pooling
-
-- **Purpose**: Manages memory allocation and kernel invocation for the max pooling operation.
-- **Parameters**:
-  - `layer_DIM &L_DIM`: Reference to layer dimensions.
-  - `layer_data &L_DATA`: Reference to layer data.
-  - `dim3 poolSize`: Pooling dimensions.
-  - `dim3 stride`: Stride size for pooling.
-- **Details**:
-  - Similar to `perform_convolution`, but specifically for max pooling.
-
-### perform_Dense
-
-- **Purpose**: Manages memory allocation and kernel invocation for the dense layer.
-- **Parameters**:
-  - `layer_DIM &L_DIM`: Reference to layer dimensions.
-  - `layer_data &L_DATA`: Reference to layer data.
-- **Details**:
-  - Allocates device memory, copies data from host to device, launches the dense kernel, and retrieves results.
-
-## Notes
-
-- Memory management is critical; device memory is allocated and freed appropriately.
-- Error checks are performed for mask and bias sizes to ensure they are sufficient.
-- The code employs shared memory for the Dense kernel to improve performance during the softmax computation.
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-# colab_notebook.ipynb
-This notebook provides the environment setup and compilation instructions for running the project. It includes:
-- Instructions to set up CUDA on Colab.
-- Commands for compiling the source files (`main.cu`, `file1.cu`, `file2.cu`, `file3.cu`).
-- Example usage and output of the program.
-
-Make sure to follow the steps provided in the notebook for running the project in a Colab environment.
+This project utilizes CUDA for GPU-accelerated image processing operations. The core functionality is implemented in C++ and CUDA kernels, which are compiled and executed through a Colab notebook. The project operates on a Convolutional Neural Network (CNN) structure, with several layers including convolution, max pooling, and fully connected layers.
 
 ---
 
-## How to Run
-1. Clone the repository to your local machine or open it in Google Colab.
-2. Open the `colab_notebook.ipynb` and follow the instructions for setting up the environment.
-3. Run all the cells to compile and execute the CUDA kernels.
+## How to Run in Google Colab
+
+- Open the Colab notebook [here](LINK_TO_COLAB_NOTEBOOK).
+- Clone the repositories in the first code cell.
+- Download the MNIST data and save files through the second code cell.
+- Compile the code file and execute the code in the next code cell.
+- Input the number of the image you want to process when prompted by the code during execution.
+---
+
+## Files and Descriptions
+
+### main.cu
+
+The `main.cu` file is the entry point for the project, orchestrating the sequence of operations across the CNN layers. It initializes layer structures, manages data flow, and invokes kernel functions for each layer. Key steps in the file include:
+
+- **Image Indexing**: Loads the specified image for processing.
+- **Layer Initialization**: Defines the dimensions and data for each CNN layer.
+- **Layer-wise Operations**: 
+  - Performs convolution using the `perform_convolution` kernel.
+  - Executes max pooling and dense layer operations.
+  
+The program concludes by verifying the output against precomputed results.
+
+---
+
+### load_npy.cpp
+
+The `load_npy.cpp` file contains functions for loading and managing `.npy` files, which store weights, biases, input data, and other layer-specific information. Key functions include:
+
+- `Load_image`: Loads image data into the input layer.
+- `populate_input_with_maps`: Copies data between layers for processing.
+- `populate_verification`: Loads verification data for output validation.
+
+These functions facilitate smooth data flow across layers by managing inputs and outputs efficiently.
+
+---
+
+### utils.cpp
+
+This file contains utility functions for:
+
+- **Verifying Outputs**: Compares kernel outputs against verification data.
+- **Printing Data**: Prints layer data, including weights, biases, and outputs, for debugging purposes.
+- **Testing**: Verifies the structure and dimensions of each layer before processing.
+
+Example functions include `verify_kernel_output` for floating-point verification and `print_output` for formatted output display.
+
+---
+
+### Kernels.cu
+
+This file contains the core CUDA kernels responsible for executing the CNN operations. These include:
+
+- **Convolution_2D**: Performs 2D convolution on input data.
+- **MaxPooling_2D**: Applies max pooling with defined window size and stride.
+- **Dense**: Executes the fully connected layer's forward pass, including softmax activation.
+
+Each kernel is optimized for GPU execution, and associated host functions (`perform_convolution`, `perform_max_pooling`, `perform_Dense`) handle memory allocation and data transfer between host and device.
+
+---
+
+### colab_notebook.ipynb
+
+In this notebook, we perform the following steps:
+
+### 1. Cloning Repositories
+Clone the `Cuda_Convolution` and `cnpy` repositories, then build the `cnpy` library:
+```bash
+!git clone https://github.com/Shameerisb/Cuda_Convolution.git
+!git clone https://github.com/rogersce/cnpy.git
+!cd cnpy && mkdir build && cd build && cmake .. && make
+```
+
+### 2. Downloading and Preprocessing MNIST Data
+Load and normalize the MNIST dataset, saving it as `.npy` files:
+```python
+import tensorflow as tf
+import numpy as np
+from tensorflow.keras.datasets import mnist
+
+input_index = int(input("Please enter the input index: "))
+(X_train, Y_train), (X_test, Y_test) = mnist.load_data()
+X_train = X_train.astype('float32') / 255.0
+X_test = X_test.astype('float32') / 255.0
+
+np.save('/content/Cuda_Convolution/Data/Input_Data', X_train)
+print("MNIST Data downloaded and saved")
+```
+
+### 3. Saving Model Weights and Biases
+Load a pre-trained Keras model and save weights, biases, and shapes:
+```python
+from tensorflow.keras.models import load_model
+import os
+
+model = load_model('/content/Cuda_Convolution/Data/Model/mnist_model_Basic.keras')
+
+def remove_none_shape(shape):
+    return [dim for dim in shape if dim is not None]
+
+save_dir = '/content/Cuda_Convolution/Data/Mnist_images/Weights_and_Biases'
+
+for i, layer in enumerate(model.layers):
+    i += 1
+    layer_weights = layer.get_weights()
+    input_shape = remove_none_shape(layer.input.shape) if layer.input is not None else []
+    output_shape = remove_none_shape(layer.output.shape) if layer.output is not None else []
+
+    if input_shape:
+        np.save(os.path.join(save_dir, f'layer_{i}_input_shape.npy'), np.array(input_shape, dtype=np.int64))
+    if output_shape:
+        np.save(os.path.join(save_dir, f'layer_{i}_output_shape.npy'), np.array(output_shape, dtype=np.int64))
+
+    if layer_weights:
+        weights, biases = layer_weights
+        if i < 4:
+            weights = np.transpose(weights, (3, 0, 1, 2))
+
+        np.save(os.path.join(save_dir, f'layer_{i}_weights.npy'), weights)
+        np.save(os.path.join(save_dir, f'layer_{i}_biases.npy'), biases)
+
+print("Weights, biases, and shapes saved.")
+```
+
+### 4. Saving Activation Maps
+Create a model to output activations, run it, and save the results:
+```python
+from tensorflow.keras.layers import Input
+from tensorflow.keras.models import Model
+
+input_layer = Input(shape=(28, 28, 1))
+x = input_layer
+layer_outputs = []
+
+for layer in model.layers:
+    x = layer(x)
+    layer_outputs.append(x)
+
+activation_model = Model(inputs=input_layer, outputs=layer_outputs)
+sample_input = X_train[input_index].reshape(1, 28, 28, 1)
+activations = activation_model.predict(sample_input)
+
+base_path = '/content/Cuda_Convolution/Data/Mnist_images/Verification_data/'
+
+for layer_index, activation in enumerate(activations):
+    activation_maps = np.squeeze(activation)
+    np.save(f"{base_path}Input_{input_index}_L_{layer_index + 1}.npy", activation_maps)
+
+print("Activation maps saved successfully.")
+```
+
+### 5. Compiling the CUDA Files
+Compile CUDA files while linking against the `cnpy` library:
+```bash
+!nvcc -o Mnist_1st_layer \
+'/content/cnpy/cnpy.cpp' \
+'/content/Cuda_Convolution/Source_Code/Mnist_main.cu' \
+'/content/Cuda_Convolution/Source_Code/utils.cpp' \
+'/content/Cuda_Convolution/Source_Code/load_npy.cpp' \
+'/content/Cuda_Convolution/Source_Code/Kernels.cu' \
+-I/usr/include \
+-I/usr/local/cuda/include \
+-L/usr/lib/x86_64-linux-gnu \
+-lcudnn -lcuda -Icnpy -lz
+```
+
+### 6. Running the CUDA Executable
+Run the compiled program, with optional profiling:
+```bash
+profiling = input("Do you want to perform profiling? (y/n): ")
+
+if profiling == 'y':
+    !nvprof --print-gpu-trace ./Mnist_1st_layer
+else:
+    !./Mnist_1st_layer
+```
+
+
+---
+
+## Compilation Instructions
+
+To compile the project in Colab, use the following command:
+
+```bash
+!nvcc -o Mnist_1st_layer  \
+'/content/cnpy/cnpy.cpp' \
+'/content/Cuda_Convolution/Source_Code/Mnist_main.cu' \
+'/content/Cuda_Convolution/Source_Code/utils.cpp' \
+'/content/Cuda_Convolution/Source_Code/load_npy.cpp' \
+'/content/Cuda_Convolution/Source_Code/Kernels.cu' \
+-I/usr/include \
+-I/usr/local/cuda/include
+```
