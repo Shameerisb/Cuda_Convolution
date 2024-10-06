@@ -8,7 +8,6 @@
 #include "Kernels.h" // Include the new header file
 #include "utils.h"
 #include "load_npy.h"
-#include "CuDNN_implementation.h"
 
 using namespace std;
 
