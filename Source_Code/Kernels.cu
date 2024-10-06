@@ -115,11 +115,11 @@ void perform_convolution(layer_DIM &L_DIM, layer_data &L_DATA) {
 
 
     // Verify the output  
-    // cout << "\n=================  Verifying Layer:" << L_DATA.index << " Results  =====================" << endl ;
-    // verify_kernel_output(L_DATA, L_DIM);
+    cout << "\n=================  Verifying Layer:" << L_DATA.index << " Results  =====================" << endl ;
+    verify_kernel_output(L_DATA, L_DIM);
 
-    cout << "\n======================GPU_Result============================" << endl ;
-    print_output(L_DATA.h_output, L_DIM, 1);
+    // cout << "\n======================GPU_Result============================" << endl ;
+    // print_output(L_DATA.h_output, L_DIM, 1);
 
     // cout << "\n===================Tensor_Flow_Result=========================" << endl ;
     // print_output(L_DATA.v_output, L_DIM, 1);
@@ -135,7 +135,6 @@ void perform_convolution(layer_DIM &L_DIM, layer_data &L_DATA) {
     // delete[] L_DATA.h_mask;
     // delete[] L_DATA.h_output;
 }
-
 
 
 // CUDA kernel for Max Pooling
@@ -197,68 +196,16 @@ void perform_max_pooling(layer_DIM &L_DIM, layer_data &L_DATA, dim3 poolSize, di
     cout << "\n=================  Verifying Layer:" << L_DATA.index << " Results  =====================" << endl;
     verify_kernel_output(L_DATA, L_DIM); // Assuming you have a verification function
     
-    cout << "\n======================GPU_Result============================" << endl ;
-    print_output(L_DATA.h_output, L_DIM, 1);
+    // cout << "\n======================GPU_Result============================" << endl ;
+    // print_output(L_DATA.h_output, L_DIM, 1);
 
-    cout << "\n===================Tensor_Flow_Result=========================" << endl ;
-    print_output(L_DATA.v_output, L_DIM, 1);
+    // cout << "\n===================Tensor_Flow_Result=========================" << endl ;
+    // print_output(L_DATA.v_output, L_DIM, 1);
 
     // Free device memory
     cudaFree(d_input);
     cudaFree(d_output);
 }
-
-
-
-
-// __global__ void Dense(float *d_input, float *d_output, const layer_DIM L) {
-//     int outIndex = threadIdx.x;
-
-//     // Shared memory to store the sums for each output index
-//     float shared_sums[10];
-
-//     if (outIndex < L.output.x) {
-//         float sum = 0.0f;
-
-//         // Compute the linear combination of inputs and weights
-//         for (int i = 0; i < L.input.x; ++i) {
-//             int weightIndex = i * L.output.x + outIndex;
-//             sum += d_input[i] * mask[weightIndex];
-//         }
-
-//         // Add bias
-//         sum += bias[outIndex];
-
-//         // Store the sum in shared memory
-//         shared_sums[outIndex] = sum;
-
-//         __syncthreads(); // Ensure all threads have written their sums
-
-//         // Now, we will compute the softmax
-//         float temp_sum = 0.0f;
-//         float temp_max = -FLT_MAX;
-
-//         // Determine the maximum value in shared_sums for numerical stability
-//         for (int i = 0; i < L.output.x; ++i) {
-//             temp_max = max(temp_max, shared_sums[i]);
-//         }
-
-//         __syncthreads(); // Ensure all threads have the max value
-
-//         // Compute the exponentials and the sum of exponentials
-//         for (int i = 0; i < L.output.x; ++i) {
-//             temp_sum += exp(shared_sums[i] - temp_max);
-//         }
-
-//         __syncthreads(); // Ensure all threads have the sum of exponentials
-
-//         // Compute the softmax value for this thread's output index
-//         d_output[outIndex] = exp(shared_sums[outIndex] - temp_max) / temp_sum;
-//     }
-// }
-
-
-
 
 
 __global__ void Dense(float *d_input, float *d_output, const layer_DIM L) {
@@ -305,9 +252,6 @@ __global__ void Dense(float *d_input, float *d_output, const layer_DIM L) {
         d_output[outIndex] = logits[outIndex] / expSum;
     }
 }
-
-
-
 
 
 void perform_Dense(layer_DIM &L_DIM, layer_data &L_DATA) {
@@ -396,11 +340,6 @@ void perform_Dense(layer_DIM &L_DIM, layer_data &L_DATA) {
 }
 
 
-
-
-
-
-
 void perform_flatting(layer_DIM &L_DIM, layer_data &L_DATA, layer_DIM &L_Input_DIM) {
     
     // Traverse through each depth, row, and column to flatten the input data
@@ -416,27 +355,27 @@ void perform_flatting(layer_DIM &L_DIM, layer_data &L_DATA, layer_DIM &L_Input_D
         }
     }
 
-    // Verify the output
-    cout << "\n=================  Verifying Layer:" << L_DATA.index << " Results  =====================" << endl;
-    verify_kernel_output(L_DATA, L_DIM); // Assuming you have a verification function
+    // // Verify the output
+    // cout << "\n=================  Verifying Layer:" << L_DATA.index << " Results  =====================" << endl;
+    // verify_kernel_output(L_DATA, L_DIM); // Assuming you have a verification function
     
-    cout << "\n======================Input============================" << endl;
-    for(int a = 0 ; a < L_DIM.output.x ;  a ++ ){
-      cout << L_DATA.h_input[a] << " " ;
-    }
-    cout << endl ;
+    // cout << "\n======================Input============================" << endl;
+    // for(int a = 0 ; a < L_DIM.output.x ;  a ++ ){
+    //   cout << L_DATA.h_input[a] << " " ;
+    // }
+    // cout << endl ;
     
-    cout << "\n======================GPU_Result============================" << endl;
-    for(int a = 0 ; a < L_DIM.output.x ;  a ++ ){
-      cout << L_DATA.h_output[a] << " " ;
-    }
-    cout << endl ;
+    // cout << "\n======================GPU_Result============================" << endl;
+    // for(int a = 0 ; a < L_DIM.output.x ;  a ++ ){
+    //   cout << L_DATA.h_output[a] << " " ;
+    // }
+    // cout << endl ;
 
-    cout << "\n===================Tensor_Flow_Result=========================" << endl;
-    for(int a = 0 ; a < L_DIM.output.x ;  a ++ ){
-      cout << L_DATA.v_output[a] << " " ;
-    }
-    cout << endl ;
+    // cout << "\n===================Tensor_Flow_Result=========================" << endl;
+    // for(int a = 0 ; a < L_DIM.output.x ;  a ++ ){
+    //   cout << L_DATA.v_output[a] << " " ;
+    // }
+    // cout << endl ;
 }
 
 
