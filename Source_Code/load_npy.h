@@ -100,9 +100,9 @@ struct layer_data {
 void Load_image(layer_data &L_DATA, int image_index);
 void populate_input_with_maps(layer_data &L_DATA, layer_DIM &L_DIM, layer_data &L_DATA_input);
 
-void populate_verification (layer_data &L_DATA, int L_index, int image_index);
+int populate_verification (layer_data &L_DATA, int L_index, int image_index);
 
-void populate_input_layer(layer_DIM &L_DIM, layer_data &L_DATA, int L_index, int image_index);
+int populate_input_layer(layer_DIM &L_DIM, layer_data &L_DATA, int L_index, int image_index);
 void populate_layer(layer_DIM &L_DIM, layer_data &L_DATA, layer_data &L_DATA_input, int L_index ,int image_index);
 
 #endif // LOAD_NPY_H

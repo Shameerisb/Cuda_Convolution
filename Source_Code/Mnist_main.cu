@@ -12,8 +12,11 @@
 using namespace std;
 
 int main() {
-
-  int image_indextoload = 1;
+  
+  // Prompt the user to enter the image index
+  int image_indextoload;
+  cout << "Please enter the image index to load: ";
+  cin >> image_indextoload;
 
   // Define dimensions for layers
   layer_DIM First_layer_DIM;
@@ -37,29 +40,14 @@ int main() {
 
 
   //          --------------First Conv2D layer-------------- 
-  populate_input_layer(First_layer_DIM, First_layer_data, 1, image_indextoload);
+  if (populate_input_layer(First_layer_DIM, First_layer_data, 1, image_indextoload)){
+    exit(1);
+  }
+
   Load_image(First_layer_data, image_indextoload); // Load after populating else it will be data will be erased to zeros.
  
   // print_test(First_layer_DIM, First_layer_data);
   perform_convolution(First_layer_DIM, First_layer_data);
-
-  // // Perform CuDNN convolution
-  // perform_cudnn_convolution(First_layer_DIM, First_layer_data);
-
-  // verify_kernel_output(First_layer_data, First_layer_DIM);
-
-  // cout << "\n======================GPU_Result============================" << endl ;
-  // print_output(First_layer_data.h_output, First_layer_DIM, 1);
-
-  // cout << "\n===================Tensor_Flow_Result=========================" << endl ;
-  // print_output(First_layer_data.v_output, First_layer_DIM, 1);
-
-
-
-
-
-
-
 
   //          --------------Second Conv2D layer--------------
   populate_layer(Second_layer_DIM, Second_layer_data, First_layer_data, 2, image_indextoload);

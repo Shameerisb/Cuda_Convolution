@@ -33,20 +33,7 @@ void Load_image(layer_data &L_DATA, int image_index) {
   // Copy the specific image data to h_input
   memcpy(L_DATA.h_input, &input_data[image_index * size], size * sizeof(float));
 
-
-  // // Optionally, print sample input data for debugging
-  // cout << "===========  Input Data Debugging Information  ==============" << endl;
-  // cout <<  endl;
-  // cout << "Input shape: ";
-  // for (const auto& dim : input_shape) cout << dim << " ";
-  // cout << endl;
-
-
-  // cout << "Sample input data: " << L_DATA.h_input[0] << ", " << L_DATA.h_input[1] << endl;
-  // cout << "===============================================================" << endl << endl;
-
 }
-
 
 void populate_input_with_maps(layer_data &L_DATA, layer_DIM &L_DIM, layer_data &L_DATA_input) {
     int size = L_DIM.input.x * L_DIM.input.y * L_DIM.input.z + 1;
@@ -58,20 +45,14 @@ void populate_input_with_maps(layer_data &L_DATA, layer_DIM &L_DIM, layer_data &
 }
 
 
-
-
-
-
-void populate_verification(layer_data &L_DATA, int L_index, int image_index) {
+int populate_verification(layer_data &L_DATA, int L_index, int image_index) {
     
   string v_file = "/content/Cuda_Convolution/Data/Mnist_images/Verification_data/Input_" + to_string(image_index) + "_L_" + to_string(L_index) + ".npy";
 
-
-  
-
-  
+  try {
   // Load the .npy file using cnpy
   cnpy::NpyArray v_npy = cnpy::npy_load(v_file);
+
 
   // Ensure the data type is float
   assert(v_npy.word_size == sizeof(float));
@@ -93,7 +74,6 @@ void populate_verification(layer_data &L_DATA, int L_index, int image_index) {
   }
 
 
-
   // Allocate memory for v_output
   L_DATA.v_output = new float[size];
 
@@ -102,23 +82,17 @@ void populate_verification(layer_data &L_DATA, int L_index, int image_index) {
   // Copy the data to v_output
   memcpy(L_DATA.v_output, v_data, size * sizeof(float));
 
+  return 0;
+  } catch (...) {
+    cout << "Save the respective verification files using \"Download Mnist and save verification files code\" cell for the image index " << image_index << endl;
+    return 1;  // Exit if the file can't be loaded
+  }
   
-
-  // // Optionally, print sample verification data for debugging
-  // cout << "===========  Verification Data Debugging Information  ==============" << endl;
-  // cout <<  endl;
-  // cout << "V shape: ";
-  // for (const auto& dim : v_shape) cout << dim << " ";
-  // cout << endl;
-
-  // cout << "Sample Verification data: " << L_DATA.v_output[0] << ", " << L_DATA.v_output[1] << endl;
-  // cout << "=====================================================================" << endl << endl;
-
 }
 
 
 
-void populate_input_layer(layer_DIM &L_DIM, layer_data &L_DATA, int L_index, int image_index) {
+int populate_input_layer(layer_DIM &L_DIM, layer_data &L_DATA, int L_index, int image_index) {
     
 
     string base_path = "/content/Cuda_Convolution/Data/Mnist_images/Weights_and_Biases/";
@@ -227,55 +201,12 @@ void populate_input_layer(layer_DIM &L_DIM, layer_data &L_DATA, int L_index, int
 
     }
 
-    populate_verification(L_DATA, L_index, image_index);
-
-    // // Optionally Print this for debugging
-    // cout << "=========================" << endl;
-    // cout << "Layer " << L_index << " Debugging Information:" << endl;
-    // cout << "=========================" << endl;
-
-    // // Print weights shape if they exist
-    // if (weights_exist) {
-    //     cout << "Weights shape: ";
-    //     for (const auto& dim : weights_shape) cout << dim << " ";
-    //     cout << endl;
-    // }
-
-    // // Print biases shape if they exist
-    // if (biases_exist) {
-    //     cout << "Biases shape: ";
-    //     for (const auto& dim : biases_shape) cout << dim << " ";
-    //     cout << endl;
-    // }
-
-    // cout << "Input shape: ";
-    // for (const auto& dim : input_shape) cout << dim << " ";
-    // cout << endl;
-
-    // cout << "Output shape: ";
-    // for (const auto& dim : output_shape) cout << dim << " ";
-    // cout << endl;
-
-    // // Print biases for debugging
-    // if (biases_exist) {
-    //     cout << "Biases: ";
-    //     cout << fixed << setprecision(18); // Set precision to 18 decimal points
-    //     for (size_t j = 0; j < biases_shape[0]; ++j) {
-    //         // cout << biases[j] << " ";
-    //         cout << L_DATA.h_bias[j] << " ";
-    //     }
-    //     cout << endl;
-    // }
-
-    // // Print sample weights and biases data
-    // cout << "Sample weights data: " << L_DATA.h_mask[0] << ", " << L_DATA.h_mask[1] << endl;
-    // cout << "Sample biases data: " << L_DATA.h_bias[0] << endl;
-    // cout << "=========================" << endl << endl;
+    if (populate_verification(L_DATA, L_index, image_index)){
+      return 1;
+    } else {
+      return 0;
+    }
 }
-
-
-
-
 
 
 void populate_layer(layer_DIM &L_DIM, layer_data &L_DATA, layer_data &L_DATA_input, int L_index ,int image_index){
