@@ -13,7 +13,7 @@ using namespace std;
 
 int main() {
 
-  int image_indextoload = 2;
+  int image_indextoload = 1;
 
   // Define dimensions for layers
   layer_DIM First_layer_DIM;

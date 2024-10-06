@@ -11,8 +11,8 @@ namespace fs = std::filesystem;
 
 void Load_image(layer_data &L_DATA, int image_index) {
 
-  string base_path = "/content/drive/MyDrive/Mnist/Trained_Weights/";
-  string input_file = base_path + "files/Input_Data.npy";
+  string base_path = "/content/Cuda_Convolution/Data/Mnist_images/Weights_and_Biases";
+  string input_file = "/content/Cuda_Convolution/Data/Input_Data.npy";
 
 
   // Load input data from a .npy file
@@ -64,9 +64,12 @@ void populate_input_with_maps(layer_data &L_DATA, layer_DIM &L_DIM, layer_data &
 
 void populate_verification(layer_data &L_DATA, int L_index, int image_index) {
     
-  string base_path = "/content/drive/MyDrive/Mnist/Trained_Weights/";
-  string v_file = base_path + "Tf_activations/Input_" + to_string(image_index) + "_L_" + to_string(L_index) + ".npy";
+  string v_file = "/content/Cuda_Convolution/Data/Mnist_images/Verification_data/Input_" + to_string(image_index) + "_L_" + to_string(L_index) + ".npy";
 
+
+  
+
+  
   // Load the .npy file using cnpy
   cnpy::NpyArray v_npy = cnpy::npy_load(v_file);
 
@@ -117,7 +120,8 @@ void populate_verification(layer_data &L_DATA, int L_index, int image_index) {
 
 void populate_input_layer(layer_DIM &L_DIM, layer_data &L_DATA, int L_index, int image_index) {
     
-    string base_path = "/content/drive/MyDrive/Mnist/Trained_Weights/files/";
+
+    string base_path = "/content/Cuda_Convolution/Data/Mnist_images/Weights_and_Biases/";
     string weights_file = base_path + "layer_" + to_string(L_index) + "_weights.npy";
     string biases_file = base_path + "layer_" + to_string(L_index) + "_biases.npy";
     string input_shape_file = base_path + "layer_" + to_string(L_index) + "_input_shape.npy";
