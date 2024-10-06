@@ -25,7 +25,7 @@ This project utilizes CUDA for GPU-accelerated image processing operations. The 
 
 ## How to Run in Google Colab
 
-- Open the Colab notebook [here](LINK_TO_COLAB_NOTEBOOK).
+- Open the Colab notebook [here](Copy_of_Mnist_in_CUDA.ipynb).
 - Clone the repositories in the first code cell.
 - Download the MNIST data and save files through the second code cell.
 - Compile the code file and execute the code in the next code cell.
